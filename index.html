@@ -1,0 +1,2183 @@
+<!doctype html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Block Library - Gutenberg ACF Vault</title>
+
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Manrope:wght@400;500;600;700;800&family=DM+Sans:wght@400;500;700&family=Space+Grotesk:wght@400;500;700;800&family=Plus+Jakarta+Sans:wght@400;500;700;800&display=swap">
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+</head>
+
+<body class="min-h-screen bg-[#eeeeec] text-[#151515] antialiased">
+<div class="min-h-screen">
+
+    <aside class="fixed left-0 top-0 z-40 hidden h-screen w-[230px] border-r border-black/10 bg-[#f7f7f5] p-4 lg:block">
+        <div class="mb-8">
+            <a href="index.html" class="text-xl font-black tracking-[-0.08em]">BLOCK</a>
+        </div>
+
+        <nav class="space-y-1">
+            <a href="blocks.html" class="flex items-center justify-between rounded-xl bg-black px-3 py-2.5 text-sm text-white">
+                <span>Blocks</span>
+                <span id="blockCount" class="text-white/45">0</span>
+            </a>
+
+            <a href="animations.html" class="flex items-center justify-between rounded-xl px-3 py-2.5 text-sm text-black/50 hover:bg-[#ebebe8] hover:text-black">
+                <span>Animaties</span>
+                <span>53</span>
+            </a>
+        </nav>
+    </aside>
+
+    <main class="min-h-screen lg:pl-[230px]">
+        <section class="px-5 py-8 md:px-8">
+            <div class="mx-auto max-w-[1500px]">
+
+                <header class="mb-10 flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
+                    <div>
+                        <p class="mb-3 text-sm text-black/40">Block Library</p>
+                        <h1 class="max-w-2xl text-5xl font-medium leading-[0.95] tracking-[-0.08em] md:text-7xl">
+                            Gutenberg blocks
+                        </h1>
+                    </div>
+
+                    <div class="flex w-full max-w-5xl flex-col gap-3 md:flex-row">
+                        <div class="flex min-w-0 flex-1 items-center gap-2 rounded-full bg-[#dfdfdc] px-4 py-2.5">
+                            <svg class="h-4 w-4 shrink-0 text-black/35" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                                <path d="M10.75 18.5a7.75 7.75 0 1 1 0-15.5 7.75 7.75 0 0 1 0 15.5Z" stroke="currentColor" stroke-width="1.8"></path>
+                                <path d="m16.5 16.5 4 4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"></path>
+                            </svg>
+
+                            <input id="searchInput" type="search" placeholder="Zoek blok..." class="w-full bg-transparent text-sm outline-none placeholder:text-black/35">
+                        </div>
+
+                        <div class="relative md:w-[220px]">
+                            <select id="customerFilterSelect" class="h-11 w-full appearance-none rounded-full bg-[#dfdfdc] pl-4 pr-10 text-sm text-black/60 outline-none">
+                                <option value="all">Alle blokken</option>
+                                <option value="general">Algemene blokken</option>
+                            </select>
+
+                            <svg class="pointer-events-none absolute right-4 top-1/2 h-4 w-4 -translate-y-1/2 text-black/35" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                                <path d="m7 10 5 5 5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
+                            </svg>
+                        </div>
+
+                        <button id="openOverviewAiExporter" class="flex h-11 items-center justify-center rounded-full bg-[#dfdfdc] px-5 text-sm text-black hover:bg-black hover:text-white">
+                            AI exporter
+                        </button>
+
+                        <label class="flex h-11 cursor-pointer items-center justify-center rounded-full bg-black px-5 text-sm text-white">
+                            Import
+                            <input id="importInput" type="file" accept=".json,.zip,application/json,application/zip" class="hidden">
+                        </label>
+                    </div>
+                </header>
+
+                <section id="blocksGrid" class="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4"></section>
+            </div>
+        </section>
+    </main>
+
+    <section id="overviewAiModal" class="fixed inset-0 z-[60] hidden bg-black/40 p-5">
+        <div class="mx-auto mt-16 max-w-2xl rounded-[28px] bg-[#f7f7f5] p-5 shadow-2xl">
+            <div class="mb-5 flex items-center justify-between">
+                <div>
+                    <h2 class="text-xl font-semibold">AI exporter</h2>
+                    <p class="mt-1 text-sm text-black/45">Beschrijf welk blok je wilt laten maken.</p>
+                </div>
+
+                <button id="closeOverviewAiExporter" class="flex h-10 w-10 items-center justify-center rounded-full bg-[#e7e7e4] text-xl hover:bg-black hover:text-white">
+                    ×
+                </button>
+            </div>
+
+            <div class="space-y-3">
+                <label class="block text-xs text-black/50">
+                    Soort blok
+                    <select id="overviewAiCategory" class="mt-2 h-11 w-full rounded-xl bg-white px-3 text-sm text-black outline-none">
+                        <option value="hero">Hero</option>
+                        <option value="content">Content</option>
+                        <option value="cards">Cards</option>
+                        <option value="cta">CTA</option>
+                        <option value="faq">FAQ</option>
+                        <option value="woocommerce">WooCommerce</option>
+                        <option value="utility">Utility</option>
+                    </select>
+                </label>
+
+                <label class="block text-xs text-black/50">
+                    Wat moet voor blok worden gemaakt?
+                    <textarea id="overviewAiPrompt" rows="7" placeholder="Bijvoorbeeld: maak een hero blok voor een advocatenkantoor met links tekst, rechts afbeelding, blauwe huisstijl, ronde button en mobiel zonder afbeelding." class="mt-2 w-full rounded-xl bg-white px-3 py-3 text-sm text-black outline-none"></textarea>
+                </label>
+
+                <button id="downloadOverviewAiRequest" class="h-11 w-full rounded-xl bg-black px-4 text-sm text-white">
+                    Download AI blok request JSON
+                </button>
+
+                <p class="text-xs leading-5 text-black/45">
+                    Dit bestand kun je aan AI geven. AI moet een importeerbaar JSON-bestand teruggeven met dezelfde vaste Block Library structuur.
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <section id="blockView" class="fixed inset-0 z-50 hidden bg-[#eeeeec]">
+        <div class="flex h-screen flex-col">
+
+            <header class="flex min-h-16 items-center justify-between border-b border-black/10 bg-[#f7f7f5] px-4 md:px-6">
+                <div class="flex min-w-0 items-center gap-3">
+                    <button id="closeBlockView" class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#e7e7e4] text-xl hover:bg-black hover:text-white">
+                        ×
+                    </button>
+
+                    <div class="min-w-0">
+                        <h2 id="viewTitle" class="truncate text-base font-medium md:text-lg"></h2>
+                        <p id="viewMeta" class="hidden text-xs text-black/40 md:block"></p>
+                    </div>
+                </div>
+
+                <div class="flex items-center gap-2">
+                    <div class="hidden rounded-full bg-[#e3e3e0] p-1 md:flex">
+                        <button data-device="desktop" class="device-button rounded-full bg-black px-4 py-2 text-xs text-white">Desktop</button>
+                        <button data-device="tablet" class="device-button rounded-full px-4 py-2 text-xs text-black/45 hover:text-black">Tablet</button>
+                        <button data-device="mobile" class="device-button rounded-full px-4 py-2 text-xs text-black/45 hover:text-black">Mobiel</button>
+                    </div>
+
+                    <label class="rounded-full bg-[#e3e3e0] px-4 py-2 text-sm text-black hover:bg-black hover:text-white">
+                        Import patch
+                        <input id="importPatchInput" type="file" accept=".json,.zip,application/json,application/zip" class="hidden">
+                    </label>
+
+                    <button id="exportAiButton" class="rounded-full bg-[#e3e3e0] px-4 py-2 text-sm text-black hover:bg-black hover:text-white">
+                        AI export
+                    </button>
+
+                    <button id="exportZipButton" class="rounded-full bg-[#e3e3e0] px-4 py-2 text-sm text-black hover:bg-black hover:text-white">
+                        Export ZIP
+                    </button>
+
+                    <button id="duplicateBlockButton" class="rounded-full bg-[#e3e3e0] px-4 py-2 text-sm text-black hover:bg-black hover:text-white">
+                        Dupliceer
+                    </button>
+
+                    <button id="toggleInfoPanel" class="rounded-full bg-black px-4 py-2 text-sm text-white">
+                        Info
+                    </button>
+                </div>
+            </header>
+
+            <div id="blockViewGrid" class="grid min-h-0 flex-1 grid-cols-1 lg:grid-cols-[1fr_430px]">
+                <main class="min-h-0 overflow-auto p-4 md:p-8">
+                    <div id="previewFrame" class="mx-auto min-h-[calc(100vh-130px)] w-full max-w-full rounded-[28px] bg-white p-4 shadow-sm transition-all duration-300 md:p-8">
+                        <div id="previewContent"></div>
+                    </div>
+                </main>
+
+                <aside id="infoPanel" class="min-h-0 overflow-auto border-l border-black/10 bg-[#f7f7f5] p-4 transition">
+
+                    <details open class="block-panel mb-3 rounded-2xl bg-white">
+                        <summary class="flex cursor-pointer list-none items-center justify-between p-4 text-sm font-medium">
+                            Blok instellingen
+                            <span>⌄</span>
+                        </summary>
+
+                        <div class="space-y-3 border-t border-black/10 p-4">
+                            <label class="block text-xs text-black/50">
+                                Naam blok
+                                <input id="blockNameInput" type="text" class="mt-2 h-10 w-full rounded-xl bg-[#f1f1ef] px-3 text-sm text-black outline-none">
+                            </label>
+
+                            <label class="block text-xs text-black/50">
+                                Soort blok
+                                <select id="blockCategorySelect" class="mt-2 h-10 w-full rounded-xl bg-[#f1f1ef] px-3 text-sm text-black outline-none">
+                                    <option value="hero">Hero</option>
+                                    <option value="content">Content</option>
+                                    <option value="cards">Cards</option>
+                                    <option value="cta">CTA</option>
+                                    <option value="faq">FAQ</option>
+                                    <option value="woocommerce">WooCommerce</option>
+                                    <option value="utility">Utility</option>
+                                </select>
+                            </label>
+
+                            <label class="block text-xs text-black/50">
+                                Klant
+                                <select id="blockCustomerSelect" class="mt-2 h-10 w-full rounded-xl bg-[#f1f1ef] px-3 text-sm text-black outline-none"></select>
+                            </label>
+
+                            <p id="linkedCustomerText" class="text-xs leading-5 text-black/45"></p>
+                        </div>
+                    </details>
+
+                    <details class="block-panel mb-3 rounded-2xl bg-white">
+                        <summary class="flex cursor-pointer list-none items-center justify-between p-4 text-sm font-medium">
+                            Element en styling
+                            <span>⌄</span>
+                        </summary>
+
+                        <div class="space-y-4 border-t border-black/10 p-4">
+                            <label class="block text-xs text-black/50">
+                                Geselecteerd onderdeel
+                                <select id="selectedElement" class="mt-2 h-10 w-full rounded-xl bg-[#f1f1ef] px-3 text-sm text-black outline-none">
+                                    <option value="section">Volledig blok</option>
+                                    <option value="eyebrow">Kleine bovenregel</option>
+                                    <option value="title">Titel / koptekst</option>
+                                    <option value="body">Lopende tekst</option>
+                                    <option value="button">Knop</option>
+                                    <option value="card">Contentvlak / kaart</option>
+                                    <option value="image">Afbeelding</option>
+                                </select>
+                            </label>
+
+                            <div id="textEditGroup" class="space-y-3">
+                                <label class="block text-xs text-black/50">
+                                    Tekstinhoud
+                                    <textarea id="elementText" rows="4" class="mt-2 w-full rounded-xl bg-[#f1f1ef] px-3 py-3 text-sm text-black outline-none"></textarea>
+                                </label>
+                            </div>
+
+                            <div id="imageEditGroup" class="hidden space-y-3">
+                                <label class="block text-xs text-black/50">
+                                    Afbeelding URL
+                                    <input id="imageUrl" type="url" placeholder="https://..." class="mt-2 h-10 w-full rounded-xl bg-[#f1f1ef] px-3 text-sm text-black outline-none">
+                                </label>
+
+                                <label class="block text-xs text-black/50">
+                                    Alt tekst
+                                    <input id="imageAlt" type="text" class="mt-2 h-10 w-full rounded-xl bg-[#f1f1ef] px-3 text-sm text-black outline-none">
+                                </label>
+
+                                <div>
+                                    <p class="mb-2 text-xs text-black/50">Placeholder kiezen</p>
+                                    <div id="placeholderImages" class="grid grid-cols-3 gap-2"></div>
+                                </div>
+                            </div>
+
+                            <div class="h-px bg-black/10"></div>
+
+                            <p id="deviceStyleLabel" class="rounded-xl bg-[#f1f1ef] px-3 py-2 text-xs text-black/50"></p>
+
+                            <div class="grid grid-cols-2 gap-3">
+                                <label class="text-xs text-black/50">
+                                    Tekstkleur
+                                    <input id="styleColor" type="color" class="mt-2 h-10 w-full rounded-xl bg-[#f1f1ef] p-1">
+                                </label>
+
+                                <label class="text-xs text-black/50">
+                                    Achtergrond
+                                    <input id="styleBackground" type="color" class="mt-2 h-10 w-full rounded-xl bg-[#f1f1ef] p-1">
+                                </label>
+
+                                <label class="text-xs text-black/50">
+                                    Radius
+                                    <input id="styleRadius" type="number" min="0" max="160" class="mt-2 h-10 w-full rounded-xl bg-[#f1f1ef] px-3 text-sm outline-none">
+                                </label>
+
+                                <label class="text-xs text-black/50">
+                                    Font size
+                                    <input id="styleFontSize" type="number" min="8" max="140" class="mt-2 h-10 w-full rounded-xl bg-[#f1f1ef] px-3 text-sm outline-none">
+                                </label>
+
+                                <label class="text-xs text-black/50">
+                                    Padding
+                                    <input id="stylePadding" type="number" min="0" max="200" class="mt-2 h-10 w-full rounded-xl bg-[#f1f1ef] px-3 text-sm outline-none">
+                                </label>
+
+                                <label class="text-xs text-black/50">
+                                    Margin top
+                                    <input id="styleMargin" type="number" min="0" max="200" class="mt-2 h-10 w-full rounded-xl bg-[#f1f1ef] px-3 text-sm outline-none">
+                                </label>
+
+                                <label class="col-span-2 text-xs text-black/50">
+                                    Gap
+                                    <input id="styleGap" type="number" min="0" max="200" class="mt-2 h-10 w-full rounded-xl bg-[#f1f1ef] px-3 text-sm outline-none">
+                                </label>
+                            </div>
+
+                            <label class="block text-xs text-black/50">
+                                Font familie
+                                <select id="fontSelect" class="mt-2 h-10 w-full rounded-xl bg-[#f1f1ef] px-3 text-sm text-black outline-none">
+                                    <option value="Inter">Inter</option>
+                                    <option value="Manrope">Manrope</option>
+                                    <option value="DM Sans">DM Sans</option>
+                                    <option value="Space Grotesk">Space Grotesk</option>
+                                    <option value="Plus Jakarta Sans">Plus Jakarta Sans</option>
+                                </select>
+                            </label>
+
+                            <div class="rounded-2xl bg-[#f1f1ef] p-3">
+                                <p class="mb-3 text-xs font-medium text-black/60">Onderdeel tonen op</p>
+
+                                <div class="grid grid-cols-3 gap-2">
+                                    <label class="flex items-center gap-2 rounded-xl bg-white px-3 py-2 text-xs text-black/60">
+                                        <input id="visibleDesktop" type="checkbox">
+                                        Desktop
+                                    </label>
+
+                                    <label class="flex items-center gap-2 rounded-xl bg-white px-3 py-2 text-xs text-black/60">
+                                        <input id="visibleTablet" type="checkbox">
+                                        Tablet
+                                    </label>
+
+                                    <label class="flex items-center gap-2 rounded-xl bg-white px-3 py-2 text-xs text-black/60">
+                                        <input id="visibleMobile" type="checkbox">
+                                        Mobiel
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </details>
+
+                    <details class="block-panel mb-3 rounded-2xl bg-white">
+                        <summary class="flex cursor-pointer list-none items-center justify-between p-4 text-sm font-medium">
+                            AI wijziging exporteren
+                            <span>⌄</span>
+                        </summary>
+
+                        <div class="space-y-3 border-t border-black/10 p-4">
+                            <div>
+                                <p class="mb-2 text-xs text-black/50">
+                                    Typ <strong>@</strong> en kies een onderdeel. Zet elke wijziging op een eigen regel.
+                                </p>
+
+                                <div class="relative">
+                                    <textarea id="aiChangeRequest" rows="7" placeholder="@button maak de knop blauw
+@card maak het contentvlak rood
+@section zet de gap tussen afbeelding en contentvlak op 10px" class="w-full rounded-xl bg-[#f1f1ef] px-3 py-3 text-sm text-black outline-none"></textarea>
+
+                                    <div id="aiTargetMenu" class="absolute left-3 top-10 z-50 hidden w-[260px] overflow-hidden rounded-2xl border border-black/10 bg-white shadow-xl">
+                                        <button type="button" data-target="@section" class="ai-target-option flex w-full flex-col px-4 py-3 text-left hover:bg-[#f1f1ef]">
+                                            <span class="text-sm font-medium">@section</span>
+                                            <span class="text-xs text-black/45">Volledig blok</span>
+                                        </button>
+                                        <button type="button" data-target="@eyebrow" class="ai-target-option flex w-full flex-col px-4 py-3 text-left hover:bg-[#f1f1ef]">
+                                            <span class="text-sm font-medium">@eyebrow</span>
+                                            <span class="text-xs text-black/45">Kleine bovenregel</span>
+                                        </button>
+                                        <button type="button" data-target="@title" class="ai-target-option flex w-full flex-col px-4 py-3 text-left hover:bg-[#f1f1ef]">
+                                            <span class="text-sm font-medium">@title</span>
+                                            <span class="text-xs text-black/45">Titel / koptekst</span>
+                                        </button>
+                                        <button type="button" data-target="@body" class="ai-target-option flex w-full flex-col px-4 py-3 text-left hover:bg-[#f1f1ef]">
+                                            <span class="text-sm font-medium">@body</span>
+                                            <span class="text-xs text-black/45">Lopende tekst</span>
+                                        </button>
+                                        <button type="button" data-target="@button" class="ai-target-option flex w-full flex-col px-4 py-3 text-left hover:bg-[#f1f1ef]">
+                                            <span class="text-sm font-medium">@button</span>
+                                            <span class="text-xs text-black/45">Knop</span>
+                                        </button>
+                                        <button type="button" data-target="@card" class="ai-target-option flex w-full flex-col px-4 py-3 text-left hover:bg-[#f1f1ef]">
+                                            <span class="text-sm font-medium">@card</span>
+                                            <span class="text-xs text-black/45">Contentvlak / kaart</span>
+                                        </button>
+                                        <button type="button" data-target="@image" class="ai-target-option flex w-full flex-col px-4 py-3 text-left hover:bg-[#f1f1ef]">
+                                            <span class="text-sm font-medium">@image</span>
+                                            <span class="text-xs text-black/45">Afbeelding</span>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <button id="downloadAiRequestButton" class="h-10 w-full rounded-xl bg-black px-3 text-sm text-white">
+                                Download AI request JSON
+                            </button>
+
+                            <p class="text-xs leading-5 text-black/45">
+                                Elke regel wordt een losse taak. AI mag alleen het onderdeel aanpassen dat met @ genoemd wordt.
+                            </p>
+                        </div>
+                    </details>
+
+                    <details class="block-panel mb-3 rounded-2xl bg-white">
+                        <summary class="flex cursor-pointer list-none items-center justify-between p-4 text-sm font-medium">
+                            Score
+                            <span id="overallScore" class="rounded-full bg-black px-3 py-1.5 text-xs text-white">0</span>
+                        </summary>
+
+                        <div class="space-y-3 border-t border-black/10 p-4">
+                            <div>
+                                <div class="mb-1 flex justify-between text-xs">
+                                    <span class="text-black/50">SEO</span>
+                                    <span id="seoScoreText">0</span>
+                                </div>
+                                <div class="h-2 overflow-hidden rounded-full bg-[#eeeeec]">
+                                    <div id="seoScoreBar" class="h-full rounded-full bg-black"></div>
+                                </div>
+                            </div>
+
+                            <div>
+                                <div class="mb-1 flex justify-between text-xs">
+                                    <span class="text-black/50">Alt tekst</span>
+                                    <span id="altScoreText">0</span>
+                                </div>
+                                <div class="h-2 overflow-hidden rounded-full bg-[#eeeeec]">
+                                    <div id="altScoreBar" class="h-full rounded-full bg-black"></div>
+                                </div>
+                            </div>
+
+                            <div>
+                                <div class="mb-1 flex justify-between text-xs">
+                                    <span class="text-black/50">Snelheid</span>
+                                    <span id="speedScoreText">0</span>
+                                </div>
+                                <div class="h-2 overflow-hidden rounded-full bg-[#eeeeec]">
+                                    <div id="speedScoreBar" class="h-full rounded-full bg-black"></div>
+                                </div>
+                            </div>
+
+                            <div>
+                                <div class="mb-1 flex justify-between text-xs">
+                                    <span class="text-black/50">Lighthouse</span>
+                                    <span id="lighthouseScoreText">0</span>
+                                </div>
+                                <div class="h-2 overflow-hidden rounded-full bg-[#eeeeec]">
+                                    <div id="lighthouseScoreBar" class="h-full rounded-full bg-black"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </details>
+
+                    <details class="block-panel mb-3 rounded-2xl bg-white">
+                        <summary class="flex cursor-pointer list-none items-center justify-between p-4 text-sm font-medium">
+                            ACF velden
+                            <span>⌄</span>
+                        </summary>
+                        <div id="viewFields" class="space-y-2 border-t border-black/10 p-4 text-sm text-black/60"></div>
+                    </details>
+
+                    <details class="block-panel mb-3 rounded-2xl bg-white">
+                        <summary class="flex cursor-pointer list-none items-center justify-between p-4 text-sm font-medium">
+                            Export bestanden
+                            <span>⌄</span>
+                        </summary>
+                        <div id="viewFiles" class="space-y-2 border-t border-black/10 p-4 text-sm text-black/60"></div>
+                    </details>
+                </aside>
+            </div>
+        </div>
+    </section>
+</div>
+
+<script>
+    const customersStorageKey = 'block-library-customers-v12';
+    const blocksStorageKey = 'block-library-blocks-v12';
+    const devices = ['desktop', 'tablet', 'mobile'];
+
+    const aiTargets = {
+        '@section': 'Volledig blok',
+        '@eyebrow': 'Kleine bovenregel',
+        '@title': 'Titel / koptekst',
+        '@body': 'Lopende tekst',
+        '@button': 'Knop',
+        '@card': 'Contentvlak / kaart',
+        '@image': 'Afbeelding'
+    };
+
+    const placeholderImages = [
+        {name: 'Hekwerk', url: 'https://images.unsplash.com/photo-1600566753086-00f18fb6b3ea?auto=format&fit=crop&w=1200&q=80'},
+        {name: 'Woning', url: 'https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=1200&q=80'},
+        {name: 'Gevel', url: 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1200&q=80'},
+        {name: 'Kantoor', url: 'https://images.unsplash.com/photo-1497366754035-f200968a6e72?auto=format&fit=crop&w=1200&q=80'},
+        {name: 'Abstract', url: 'https://images.unsplash.com/photo-1557683316-973673baf926?auto=format&fit=crop&w=1200&q=80'},
+        {name: 'Project', url: 'https://images.unsplash.com/photo-1503387762-592deb58ef4e?auto=format&fit=crop&w=1200&q=80'}
+    ];
+
+    const customersDefault = {
+        general: {name: 'Algemene blokken', url: ''},
+        crewb: {name: 'CREW-B', url: 'https://crewb.digiwedo.dev/'},
+        payrollminds: {name: 'Payrollminds', url: 'https://payrollminds.com/'},
+        mthekwerken: {name: 'MT Hekwerken', url: 'https://www.mthekwerken.nl/'}
+    };
+
+    function createElementStyles(theme) {
+        return {
+            section: {color: theme.text, background: theme.background, radius: theme.sectionRadius, fontSize: 16, padding: theme.sectionPadding, margin: 0, gap: theme.sectionGap},
+            eyebrow: {color: theme.muted, background: 'transparent', radius: 0, fontSize: 14, padding: 0, margin: 0, gap: 0},
+            title: {color: theme.text, background: 'transparent', radius: 0, fontSize: theme.titleSize, padding: 0, margin: 0, gap: 0},
+            body: {color: theme.muted, background: 'transparent', radius: 0, fontSize: theme.bodySize, padding: 0, margin: 28, gap: 0},
+            button: {color: theme.buttonText, background: theme.accent, radius: theme.buttonRadius, fontSize: 16, padding: theme.buttonPadding, margin: 28, gap: 0, widthMode: 'auto'},
+            card: {color: theme.cardText, background: theme.cardBackground, radius: theme.cardRadius, fontSize: 16, padding: theme.cardPadding, margin: 0, gap: theme.cardGap},
+            image: {color: theme.cardText, background: theme.imageBackground, radius: theme.imageRadius, fontSize: 16, padding: theme.imagePadding, margin: 0, gap: 0}
+        };
+    }
+
+    function createResponsiveStyles(theme) {
+        const desktop = createElementStyles(theme);
+        const tablet = JSON.parse(JSON.stringify(desktop));
+        const mobile = JSON.parse(JSON.stringify(desktop));
+
+        tablet.section.padding = Math.round(theme.sectionPadding * 0.75);
+        tablet.section.gap = Math.round(theme.sectionGap * 0.75);
+        tablet.title.fontSize = Math.round(theme.titleSize * 0.78);
+        tablet.body.fontSize = Math.max(16, theme.bodySize - 1);
+
+        mobile.section.padding = Math.round(theme.sectionPadding * 0.42);
+        mobile.section.gap = Math.round(theme.sectionGap * 0.55);
+        mobile.title.fontSize = Math.round(theme.titleSize * 0.52);
+        mobile.body.fontSize = 16;
+        mobile.button.fontSize = 15;
+        mobile.button.padding = Math.round(theme.buttonPadding * 0.85);
+        mobile.card.padding = Math.round(theme.cardPadding * 0.7);
+
+        return {desktop, tablet, mobile};
+    }
+
+    function createVisibility() {
+        return {
+            section: {desktop: true, tablet: true, mobile: true},
+            eyebrow: {desktop: true, tablet: true, mobile: true},
+            title: {desktop: true, tablet: true, mobile: true},
+            body: {desktop: true, tablet: true, mobile: true},
+            button: {desktop: true, tablet: true, mobile: true},
+            card: {desktop: true, tablet: true, mobile: true},
+            image: {desktop: true, tablet: true, mobile: true}
+        };
+    }
+
+    const blocksDefault = {
+        generalHero: {
+            title: 'Algemene Hero Split',
+            meta: 'Algemene blokken · hero',
+            category: 'hero',
+            customerId: 'general',
+            previewType: 'hero-split',
+            isDuplicate: false,
+            edited: false,
+            font: 'Inter',
+            content: {
+                eyebrow: 'Algemeen blok',
+                title: 'Een flexibel hero blok voor elke website',
+                body: 'Gebruik dit blok als basis voor landingspagina’s, dienstenpagina’s of campagnes.',
+                button: 'Bekijk meer',
+                alt: 'Algemene hero afbeelding'
+            },
+            image: {url: ''},
+            responsive: createResponsiveStyles({
+                background: '#f3f3f0',
+                text: '#171717',
+                muted: '#6f6f6a',
+                accent: '#171717',
+                buttonText: '#ffffff',
+                cardText: '#171717',
+                cardBackground: 'transparent',
+                imageBackground: '#d9d9d5',
+                sectionRadius: 28,
+                cardRadius: 24,
+                imageRadius: 18,
+                buttonRadius: 999,
+                sectionPadding: 70,
+                cardPadding: 0,
+                imagePadding: 0,
+                buttonPadding: 16,
+                titleSize: 74,
+                bodySize: 18,
+                sectionGap: 40,
+                cardGap: 24
+            }),
+            visibility: createVisibility(),
+            score: {seo: 92, alt: 88, speed: 96, lighthouse: 95},
+            fields: ['eyebrow_text · Text', 'title · Text', 'description · WYSIWYG', 'button · Link', 'image · Image'],
+            files: ['acf-json/group_general_hero_split.json', 'block.json', 'render.php', 'style.css']
+        },
+
+        mthFairPrices: {
+            title: 'MT Hekwerken Eerlijke prijzen',
+            meta: 'MT Hekwerken · content',
+            category: 'content',
+            customerId: 'mthekwerken',
+            previewType: 'mth-fair-prices',
+            isDuplicate: false,
+            edited: false,
+            font: 'DM Sans',
+            content: {
+                eyebrow: '',
+                title: 'Eerlijke prijzen',
+                body: 'Bij MT Hekwerken vind je een compleet aanbod van hekwerk, poorten, composiet schuttingen en Composiet gevelbekleding. We zijn voortdurend bezig om onze prijzen zo scherp mogelijk te houden. Een schuttingdeel of de gehele wijk? Geen probleem, wij zorgen voor top kwaliteit tegen de aller scherpste prijzen.',
+                button: 'Offerte aanvragen',
+                alt: 'MT Hekwerken project met composiet schuttingen'
+            },
+            image: {url: ''},
+            responsive: createResponsiveStyles({
+                background: '#dff3fb',
+                text: '#07182d',
+                muted: '#07182d',
+                accent: '#ff6720',
+                buttonText: '#ffffff',
+                cardText: '#07182d',
+                cardBackground: 'transparent',
+                imageBackground: '#c8b091',
+                sectionRadius: 0,
+                cardRadius: 0,
+                imageRadius: 0,
+                buttonRadius: 6,
+                sectionPadding: 80,
+                cardPadding: 0,
+                imagePadding: 0,
+                buttonPadding: 16,
+                titleSize: 48,
+                bodySize: 18,
+                sectionGap: 48,
+                cardGap: 24
+            }),
+            visibility: createVisibility(),
+            score: {seo: 93, alt: 87, speed: 91, lighthouse: 92},
+            fields: ['title · Text', 'content · WYSIWYG', 'button · Link', 'images · Repeater'],
+            files: ['acf-json/group_mth_fair_prices.json', 'block.json', 'render.php', 'style.css']
+        },
+
+        mthCompositeFacade: {
+            title: 'MT Hekwerken Composiet gevelbekleding',
+            meta: 'MT Hekwerken · content',
+            category: 'content',
+            customerId: 'mthekwerken',
+            previewType: 'mth-composite',
+            isDuplicate: false,
+            edited: false,
+            font: 'DM Sans',
+            content: {
+                eyebrow: '',
+                title: 'Nieuw in ons assortiment: Composiet gevelbekleding',
+                body: 'We zijn trots om composiet gevelbekleding aan te bieden. Deze onderhoudsvrije oplossing combineert de warme uitstraling van hout met de voordelen van duurzaam materiaal. Het is de perfecte keuze voor wie op zoek is naar een strakke, moderne gevel die jarenlang meegaat.',
+                button: 'Bekijk onze composiet gevelbekleding',
+                alt: 'Composiet gevelbekleding aan moderne woning'
+            },
+            image: {url: ''},
+            responsive: createResponsiveStyles({
+                background: '#ffffff',
+                text: '#ffffff',
+                muted: '#ffffff',
+                accent: '#94d07b',
+                buttonText: '#ffffff',
+                cardText: '#ffffff',
+                cardBackground: '#4cad38',
+                imageBackground: '#b88a62',
+                sectionRadius: 0,
+                cardRadius: 20,
+                imageRadius: 20,
+                buttonRadius: 999,
+                sectionPadding: 52,
+                cardPadding: 60,
+                imagePadding: 0,
+                buttonPadding: 16,
+                titleSize: 34,
+                bodySize: 18,
+                sectionGap: 0,
+                cardGap: 24
+            }),
+            visibility: createVisibility(),
+            score: {seo: 92, alt: 89, speed: 90, lighthouse: 91},
+            fields: ['title · Text', 'text · WYSIWYG', 'button · Link', 'image · Image'],
+            files: ['acf-json/group_mth_composite_facade.json', 'block.json', 'render.php', 'style.css']
+        }
+    };
+
+    let customers = {};
+    let blocks = {};
+    let cards = [];
+    let currentBlockKey = null;
+    let currentDevice = 'desktop';
+    let selectedEditableElement = 'title';
+    let infoVisible = true;
+
+    const blocksGrid = document.getElementById('blocksGrid');
+    const blockCount = document.getElementById('blockCount');
+    const searchInput = document.getElementById('searchInput');
+    const customerFilterSelect = document.getElementById('customerFilterSelect');
+    const importInput = document.getElementById('importInput');
+    const importPatchInput = document.getElementById('importPatchInput');
+
+    const overviewAiModal = document.getElementById('overviewAiModal');
+    const openOverviewAiExporter = document.getElementById('openOverviewAiExporter');
+    const closeOverviewAiExporter = document.getElementById('closeOverviewAiExporter');
+    const overviewAiCategory = document.getElementById('overviewAiCategory');
+    const overviewAiPrompt = document.getElementById('overviewAiPrompt');
+    const downloadOverviewAiRequest = document.getElementById('downloadOverviewAiRequest');
+
+    const blockView = document.getElementById('blockView');
+    const blockViewGrid = document.getElementById('blockViewGrid');
+    const closeBlockView = document.getElementById('closeBlockView');
+    const previewFrame = document.getElementById('previewFrame');
+    const previewContent = document.getElementById('previewContent');
+    const viewTitle = document.getElementById('viewTitle');
+    const viewMeta = document.getElementById('viewMeta');
+    const viewFields = document.getElementById('viewFields');
+    const viewFiles = document.getElementById('viewFiles');
+    const infoPanel = document.getElementById('infoPanel');
+    const toggleInfoPanel = document.getElementById('toggleInfoPanel');
+    const duplicateBlockButton = document.getElementById('duplicateBlockButton');
+    const exportZipButton = document.getElementById('exportZipButton');
+    const exportAiButton = document.getElementById('exportAiButton');
+    const downloadAiRequestButton = document.getElementById('downloadAiRequestButton');
+    const aiChangeRequest = document.getElementById('aiChangeRequest');
+    const aiTargetMenu = document.getElementById('aiTargetMenu');
+    const aiTargetOptions = Array.from(document.querySelectorAll('.ai-target-option'));
+    const deviceButtons = Array.from(document.querySelectorAll('.device-button'));
+
+    const blockNameInput = document.getElementById('blockNameInput');
+    const blockCategorySelect = document.getElementById('blockCategorySelect');
+    const blockCustomerSelect = document.getElementById('blockCustomerSelect');
+    const linkedCustomerText = document.getElementById('linkedCustomerText');
+
+    const selectedElement = document.getElementById('selectedElement');
+    const elementText = document.getElementById('elementText');
+    const textEditGroup = document.getElementById('textEditGroup');
+    const imageEditGroup = document.getElementById('imageEditGroup');
+    const imageUrl = document.getElementById('imageUrl');
+    const imageAlt = document.getElementById('imageAlt');
+    const placeholderImagesContainer = document.getElementById('placeholderImages');
+
+    const styleColor = document.getElementById('styleColor');
+    const styleBackground = document.getElementById('styleBackground');
+    const styleRadius = document.getElementById('styleRadius');
+    const styleFontSize = document.getElementById('styleFontSize');
+    const stylePadding = document.getElementById('stylePadding');
+    const styleMargin = document.getElementById('styleMargin');
+    const styleGap = document.getElementById('styleGap');
+    const fontSelect = document.getElementById('fontSelect');
+    const deviceStyleLabel = document.getElementById('deviceStyleLabel');
+
+    const visibleDesktop = document.getElementById('visibleDesktop');
+    const visibleTablet = document.getElementById('visibleTablet');
+    const visibleMobile = document.getElementById('visibleMobile');
+
+    const overallScore = document.getElementById('overallScore');
+    const seoScoreText = document.getElementById('seoScoreText');
+    const altScoreText = document.getElementById('altScoreText');
+    const speedScoreText = document.getElementById('speedScoreText');
+    const lighthouseScoreText = document.getElementById('lighthouseScoreText');
+    const seoScoreBar = document.getElementById('seoScoreBar');
+    const altScoreBar = document.getElementById('altScoreBar');
+    const speedScoreBar = document.getElementById('speedScoreBar');
+    const lighthouseScoreBar = document.getElementById('lighthouseScoreBar');
+
+    function cloneData(data) {
+        return JSON.parse(JSON.stringify(data));
+    }
+
+    function loadData() {
+        customers = cloneData(customersDefault);
+        blocks = cloneData(blocksDefault);
+
+        const storedCustomers = JSON.parse(localStorage.getItem(customersStorageKey) || '{}');
+        const storedBlocks = JSON.parse(localStorage.getItem(blocksStorageKey) || '{}');
+
+        customers = Object.assign(customers, storedCustomers);
+        blocks = Object.assign(blocks, storedBlocks);
+
+        Object.keys(blocks).forEach(function (key) {
+            normalizeBlock(blocks[key]);
+        });
+    }
+
+    function normalizeBlock(block) {
+        if (!block.responsive && block.elements) {
+            block.responsive = {
+                desktop: cloneData(block.elements),
+                tablet: cloneData(block.elements),
+                mobile: cloneData(block.elements)
+            };
+            delete block.elements;
+        }
+
+        if (!block.visibility) {
+            block.visibility = createVisibility();
+        }
+
+        devices.forEach(function (device) {
+            if (!block.responsive[device]) {
+                block.responsive[device] = cloneData(block.responsive.desktop);
+            }
+        });
+
+        Object.keys(createVisibility()).forEach(function (elementKey) {
+            if (!block.visibility[elementKey]) {
+                block.visibility[elementKey] = {desktop: true, tablet: true, mobile: true};
+            }
+
+            devices.forEach(function (device) {
+                if (typeof block.visibility[elementKey][device] !== 'boolean') {
+                    block.visibility[elementKey][device] = true;
+                }
+            });
+        });
+
+        Object.keys(block.responsive.desktop).forEach(function (elementKey) {
+            devices.forEach(function (device) {
+                const element = block.responsive[device][elementKey];
+
+                if (typeof element.widthMode === 'undefined' && elementKey === 'button') {
+                    element.widthMode = 'auto';
+                }
+
+                if (typeof element.gap === 'undefined') {
+                    element.gap = 0;
+                }
+            });
+        });
+
+        if (!block.category) {
+            block.category = 'content';
+        }
+
+        if (!block.customerId) {
+            block.customerId = 'general';
+        }
+
+        if (!block.previewType) {
+            block.previewType = 'hero-split';
+        }
+
+        if (!block.score) {
+            block.score = {seo: 80, alt: 80, speed: 80, lighthouse: 80};
+        }
+
+        if (!block.fields) {
+            block.fields = ['title · Text', 'description · WYSIWYG', 'button · Link', 'image · Image'];
+        }
+
+        if (!block.files) {
+            block.files = ['block.json', 'render.php', 'style.css'];
+        }
+    }
+
+    function saveData() {
+        localStorage.setItem(customersStorageKey, JSON.stringify(customers));
+
+        const storedBlocks = {};
+
+        Object.entries(blocks).forEach(function ([key, block]) {
+            if (block.isDuplicate || block.edited || block.imported) {
+                storedBlocks[key] = block;
+            }
+        });
+
+        localStorage.setItem(blocksStorageKey, JSON.stringify(storedBlocks));
+    }
+
+    function getCustomerName(customerId) {
+        if (!customerId || !customers[customerId]) {
+            return 'Algemene blokken';
+        }
+
+        return customers[customerId].name;
+    }
+
+    function getOverallScore(block) {
+        return Math.round((block.score.seo + block.score.alt + block.score.speed + block.score.lighthouse) / 4);
+    }
+
+    function getElements(block) {
+        normalizeBlock(block);
+        return block.responsive[currentDevice];
+    }
+
+    function getElement(block, key) {
+        return getElements(block)[key];
+    }
+
+    function isVisible(block, key) {
+        normalizeBlock(block);
+        return block.visibility[key] && block.visibility[key][currentDevice] !== false;
+    }
+
+    function toColorInput(value) {
+        if (!value || value === 'transparent') {
+            return '#ffffff';
+        }
+
+        return value;
+    }
+
+    function cssElement(element) {
+        return [
+            'color:' + element.color,
+            'background:' + element.background,
+            'border-radius:' + element.radius + 'px',
+            'font-size:' + element.fontSize + 'px',
+            'padding:' + element.padding + 'px',
+            'margin-top:' + element.margin + 'px'
+        ].join(';') + ';';
+    }
+
+    function sectionCss(block) {
+        return cssElement(getElement(block, 'section')) + "font-family:'" + block.font + "', sans-serif;";
+    }
+
+    function selectedShadow(key) {
+        if (key !== selectedEditableElement) {
+            return '';
+        }
+
+        return 'box-shadow:0 0 0 3px rgba(59,130,246,.35);';
+    }
+
+    function applySelectionStyle(style, key) {
+        return style + selectedShadow(key);
+    }
+
+    function getGridColumns(columns) {
+        if (currentDevice === 'mobile') {
+            return 'grid-cols-1';
+        }
+
+        if (currentDevice === 'tablet' && columns === 3) {
+            return 'grid-cols-2';
+        }
+
+        return columns === 3 ? 'grid-cols-3' : 'grid-cols-2';
+    }
+
+    function renderEditableText(block, key, tag, className) {
+        if (!isVisible(block, key)) {
+            return '';
+        }
+
+        return `<${tag} data-editable="${key}" class="${className}" style="${applySelectionStyle(cssElement(getElement(block, key)), key)}">${getTextValueForElement(block, key)}</${tag}>`;
+    }
+
+    function renderEditableButton(block) {
+        if (!isVisible(block, 'button')) {
+            return '';
+        }
+
+        const buttonElement = getElement(block, 'button');
+        const widthClass = buttonElement.widthMode === 'full' ? 'flex w-full justify-center' : 'inline-flex w-auto';
+
+        return `<a href="#" data-editable="button" class="${widthClass} cursor-pointer font-medium" style="${applySelectionStyle(cssElement(buttonElement), 'button')}">${block.content.button}</a>`;
+    }
+
+    function renderImagePlaceholder(block) {
+        if (!isVisible(block, 'image')) {
+            return '';
+        }
+
+        const style = applySelectionStyle(cssElement(getElement(block, 'image')), 'image');
+
+        if (block.image.url.trim() !== '') {
+            return `<img src="${block.image.url}" alt="${block.content.alt}" data-editable="image" class="h-full min-h-[320px] w-full cursor-pointer object-cover" style="${style}">`;
+        }
+
+        return `<div data-editable="image" class="flex h-full min-h-[320px] w-full cursor-pointer items-center justify-center text-sm text-black/35" style="${style}">Klik om afbeelding te kiezen</div>`;
+    }
+
+    function renderHeroSplit(block) {
+        const sectionStyle = applySelectionStyle(sectionCss(block), 'section');
+        const sectionGap = getElement(block, 'section').gap;
+
+        const textColumn = `
+            <div>
+                ${renderEditableText(block, 'eyebrow', 'p', 'cursor-pointer font-medium')}
+                ${renderEditableText(block, 'title', 'h1', 'cursor-pointer max-w-2xl font-semibold leading-[0.95] tracking-[-0.08em]')}
+                ${renderEditableText(block, 'body', 'p', 'cursor-pointer max-w-xl leading-8')}
+                ${renderEditableButton(block)}
+            </div>
+        `;
+
+        const cardColumn = isVisible(block, 'card')
+            ? `<div data-editable="card" class="min-h-[360px] cursor-pointer" style="${applySelectionStyle(cssElement(getElement(block, 'card')), 'card')}">${renderImagePlaceholder(block)}</div>`
+            : '';
+
+        const columns = [textColumn, cardColumn].filter(Boolean).join('');
+
+        return `
+            <section data-editable="section" class="cursor-pointer" style="${sectionStyle}">
+                <div class="grid min-h-[700px] items-center ${cardColumn ? getGridColumns(2) : 'grid-cols-1'}" style="gap:${sectionGap}px;">
+                    ${columns}
+                </div>
+            </section>
+        `;
+    }
+
+    function renderPayrollHero(block) {
+        const sectionStyle = applySelectionStyle(sectionCss(block), 'section');
+
+        return `
+            <section data-editable="section" class="cursor-pointer" style="${sectionStyle}">
+                <div class="flex min-h-[700px] items-center justify-center text-center">
+                    <div class="mx-auto max-w-5xl">
+                        ${renderEditableText(block, 'title', 'h1', 'cursor-pointer font-semibold leading-[0.95] tracking-[-0.08em]')}
+                        ${renderEditableText(block, 'body', 'p', 'cursor-pointer mx-auto max-w-3xl leading-8')}
+                        ${renderEditableButton(block)}
+                    </div>
+                </div>
+            </section>
+        `;
+    }
+
+    function renderMthFairPrices(block) {
+        const sectionStyle = applySelectionStyle(sectionCss(block), 'section');
+        const sectionGap = getElement(block, 'section').gap;
+        const cardGap = getElement(block, 'card').gap;
+
+        const textColumn = `
+            <div>
+                ${renderEditableText(block, 'title', 'h2', 'cursor-pointer font-bold leading-tight tracking-[-0.04em]')}
+                ${renderEditableText(block, 'body', 'p', 'cursor-pointer max-w-lg leading-8')}
+                ${renderEditableButton(block)}
+            </div>
+        `;
+
+        const imageGrid = isVisible(block, 'card')
+            ? `<div data-editable="card" class="grid cursor-pointer grid-cols-2" style="gap:${cardGap}px;${applySelectionStyle(cssElement(getElement(block, 'card')), 'card')}">
+                    ${isVisible(block, 'image') ? `<div class="h-[430px] overflow-hidden">${renderImagePlaceholder(block)}</div><div class="h-[430px] overflow-hidden">${renderImagePlaceholder(block)}</div>` : ''}
+               </div>`
+            : '';
+
+        const columns = [textColumn, imageGrid].filter(Boolean).join('');
+
+        return `
+            <section data-editable="section" class="cursor-pointer" style="${sectionStyle}">
+                <div class="mx-auto grid min-h-[620px] max-w-6xl items-center ${imageGrid ? getGridColumns(2) : 'grid-cols-1'}" style="gap:${sectionGap}px;">
+                    ${columns}
+                </div>
+            </section>
+        `;
+    }
+
+    function renderMthComposite(block) {
+        const sectionStyle = applySelectionStyle(sectionCss(block), 'section');
+        const sectionGap = getElement(block, 'section').gap;
+
+        const imageColumn = isVisible(block, 'image')
+            ? `<div class="min-h-[560px] overflow-hidden">${renderImagePlaceholder(block)}</div>`
+            : '';
+
+        const contentColumn = isVisible(block, 'card')
+            ? `<div data-editable="card" class="flex cursor-pointer flex-col justify-center" style="${applySelectionStyle(cssElement(getElement(block, 'card')), 'card')}">
+                    ${renderEditableText(block, 'title', 'h2', 'cursor-pointer max-w-xl font-bold leading-tight tracking-[-0.04em]')}
+                    ${renderEditableText(block, 'body', 'p', 'cursor-pointer max-w-xl leading-8')}
+                    ${renderEditableButton(block)}
+               </div>`
+            : '';
+
+        const columns = [imageColumn, contentColumn].filter(Boolean).join('');
+        const gridClass = imageColumn && contentColumn ? getGridColumns(2) : 'grid-cols-1';
+
+        return `
+            <section data-editable="section" class="cursor-pointer" style="${sectionStyle}">
+                <div class="mx-auto grid max-w-6xl overflow-hidden ${gridClass}" style="border-radius:${getElement(block, 'card').radius}px;gap:${sectionGap}px;">
+                    ${columns}
+                </div>
+            </section>
+        `;
+    }
+
+    function renderPreview(block) {
+        if (block.previewType === 'payroll-hero') {
+            return renderPayrollHero(block);
+        }
+
+        if (block.previewType === 'mth-fair-prices') {
+            return renderMthFairPrices(block);
+        }
+
+        if (block.previewType === 'mth-composite') {
+            return renderMthComposite(block);
+        }
+
+        return renderHeroSplit(block);
+    }
+
+    function createCard(blockKey, block) {
+        const article = document.createElement('article');
+
+        article.className = 'block-card cursor-pointer rounded-[22px] bg-[#f8f8f6] p-2 transition hover:-translate-y-1 hover:shadow-xl';
+        article.dataset.block = blockKey;
+        article.dataset.customerId = block.customerId || 'general';
+        article.dataset.title = [block.title, block.meta, block.category, getCustomerName(block.customerId), block.content.title].join(' ').toLowerCase();
+
+        const customerName = getCustomerName(block.customerId);
+        const variantLabel = block.isDuplicate ? '<span class="rounded-full bg-black px-2 py-1 text-[10px] text-white">Variant</span>' : '';
+        const score = getOverallScore(block);
+
+        article.innerHTML = `
+            <div class="relative overflow-hidden rounded-[18px] bg-white">
+                <div class="mini-preview"></div>
+                <div class="absolute right-3 top-3 rounded-full bg-white/90 px-2 py-1 text-[10px] font-medium text-black shadow-sm">${score}</div>
+            </div>
+
+            <div class="flex items-center justify-between px-2 py-4">
+                <div class="min-w-0">
+                    <div class="flex items-center gap-2">
+                        <h2 class="truncate font-medium">${block.title}</h2>
+                        ${variantLabel}
+                    </div>
+                    <p class="mt-1 truncate text-xs text-black/40">${customerName} · ${block.category}</p>
+                </div>
+                <span class="ml-4 text-xl text-black/25">↗</span>
+            </div>
+        `;
+
+        const previousDevice = currentDevice;
+        const previousSelected = selectedEditableElement;
+        currentDevice = 'desktop';
+        selectedEditableElement = '';
+        article.querySelector('.mini-preview').innerHTML = renderPreview(block);
+        selectedEditableElement = previousSelected;
+        currentDevice = previousDevice;
+
+        article.addEventListener('click', function () {
+            openBlock(blockKey);
+        });
+
+        return article;
+    }
+
+    function renderCards() {
+        blocksGrid.innerHTML = '';
+
+        Object.entries(blocks).forEach(function ([blockKey, block]) {
+            blocksGrid.appendChild(createCard(blockKey, block));
+        });
+
+        cards = Array.from(document.querySelectorAll('.block-card'));
+        blockCount.textContent = String(Object.keys(blocks).length);
+
+        applyFilters();
+        updateMiniPreviewSizes();
+    }
+
+    function applyFilters() {
+        const query = searchInput.value.toLowerCase().trim();
+        const customerFilter = customerFilterSelect.value;
+
+        cards.forEach(function (card) {
+            const matchesSearch = card.dataset.title.includes(query);
+            let matchesCustomer = true;
+
+            if (customerFilter !== 'all') {
+                matchesCustomer = card.dataset.customerId === customerFilter;
+            }
+
+            card.classList.toggle('hidden', !(matchesSearch && matchesCustomer));
+        });
+
+        updateMiniPreviewSizes();
+    }
+
+    function updateMiniPreviewSizes() {
+        const previewWidth = 1200;
+        const previewHeight = 700;
+        const ratio = previewHeight / previewWidth;
+
+        document.querySelectorAll('.mini-preview').forEach(function (preview) {
+            const wrapper = preview.parentElement;
+            const wrapperWidth = wrapper.clientWidth;
+            const scale = wrapperWidth / previewWidth;
+
+            wrapper.style.height = Math.round(wrapperWidth * ratio) + 'px';
+            preview.style.width = previewWidth + 'px';
+            preview.style.height = previewHeight + 'px';
+            preview.style.transform = 'scale(' + scale + ')';
+            preview.style.transformOrigin = 'top left';
+            preview.style.pointerEvents = 'none';
+        });
+    }
+
+    function renderCustomerSelects() {
+        const selectedFilter = customerFilterSelect.value || 'all';
+        const selectedBlockCustomer = blockCustomerSelect.value || 'general';
+
+        customerFilterSelect.innerHTML = '<option value="all">Alle blokken</option>';
+        blockCustomerSelect.innerHTML = '';
+
+        Object.entries(customers).forEach(function ([customerId, customer]) {
+            const filterOption = document.createElement('option');
+            filterOption.value = customerId;
+            filterOption.textContent = customer.name;
+            customerFilterSelect.appendChild(filterOption);
+
+            const blockOption = document.createElement('option');
+            blockOption.value = customerId;
+            blockOption.textContent = customer.name;
+            blockCustomerSelect.appendChild(blockOption);
+        });
+
+        customerFilterSelect.value = customerFilterSelect.querySelector('[value="' + selectedFilter + '"]') ? selectedFilter : 'all';
+        blockCustomerSelect.value = blockCustomerSelect.querySelector('[value="' + selectedBlockCustomer + '"]') ? selectedBlockCustomer : 'general';
+    }
+
+    function getTextValueForElement(block, elementKey) {
+        if (elementKey === 'eyebrow') {
+            return block.content.eyebrow;
+        }
+
+        if (elementKey === 'title') {
+            return block.content.title;
+        }
+
+        if (elementKey === 'body') {
+            return block.content.body;
+        }
+
+        if (elementKey === 'button') {
+            return block.content.button;
+        }
+
+        return '';
+    }
+
+    function setTextValueForElement(block, elementKey, value) {
+        if (elementKey === 'eyebrow') {
+            block.content.eyebrow = value;
+        }
+
+        if (elementKey === 'title') {
+            block.content.title = value;
+        }
+
+        if (elementKey === 'body') {
+            block.content.body = value;
+        }
+
+        if (elementKey === 'button') {
+            block.content.button = value;
+        }
+    }
+
+    function renderPlaceholderButtons() {
+        placeholderImagesContainer.innerHTML = '';
+
+        placeholderImages.forEach(function (image) {
+            const button = document.createElement('button');
+
+            button.type = 'button';
+            button.className = 'group overflow-hidden rounded-xl bg-[#f1f1ef] text-left';
+            button.innerHTML = `
+                <img src="${image.url}" alt="${image.name}" class="h-16 w-full object-cover transition group-hover:scale-105">
+                <span class="block px-2 py-1 text-[10px] text-black/50">${image.name}</span>
+            `;
+
+            button.addEventListener('click', function () {
+                if (!currentBlockKey || !blocks[currentBlockKey]) {
+                    return;
+                }
+
+                selectedElement.value = 'image';
+                selectedEditableElement = 'image';
+                blocks[currentBlockKey].image.url = image.url;
+                blocks[currentBlockKey].content.alt = image.name;
+                imageUrl.value = image.url;
+                imageAlt.value = image.name;
+                updateCurrentBlock({skipSettings: true});
+                syncElementControls();
+            });
+
+            placeholderImagesContainer.appendChild(button);
+        });
+    }
+
+    function openPanelBySummaryText(text) {
+        const panels = Array.from(document.querySelectorAll('#infoPanel .block-panel'));
+
+        panels.forEach(function (panel) {
+            const summary = panel.querySelector('summary');
+            panel.open = summary && summary.textContent.includes(text);
+        });
+    }
+
+    function syncElementControls() {
+        if (!currentBlockKey || !blocks[currentBlockKey]) {
+            return;
+        }
+
+        const block = blocks[currentBlockKey];
+        const elementKey = selectedElement.value;
+        const element = getElement(block, elementKey);
+
+        if (!element) {
+            return;
+        }
+
+        selectedEditableElement = elementKey;
+
+        const canEditText = ['eyebrow', 'title', 'body', 'button'].includes(elementKey);
+        const isImage = elementKey === 'image';
+
+        textEditGroup.classList.toggle('hidden', !canEditText);
+        imageEditGroup.classList.toggle('hidden', !isImage);
+
+        elementText.value = getTextValueForElement(block, elementKey);
+        imageUrl.value = block.image.url;
+        imageAlt.value = block.content.alt;
+
+        styleColor.value = toColorInput(element.color);
+        styleBackground.value = toColorInput(element.background);
+        styleRadius.value = element.radius;
+        styleFontSize.value = element.fontSize;
+        stylePadding.value = element.padding;
+        styleMargin.value = element.margin;
+        styleGap.value = element.gap || 0;
+        fontSelect.value = block.font;
+
+        visibleDesktop.checked = block.visibility[elementKey].desktop !== false;
+        visibleTablet.checked = block.visibility[elementKey].tablet !== false;
+        visibleMobile.checked = block.visibility[elementKey].mobile !== false;
+
+        deviceStyleLabel.textContent = 'Je bewerkt nu de ' + currentDevice + '-stijl van dit onderdeel.';
+
+        renderCurrentPreview();
+    }
+
+    function openBlock(blockKey) {
+        const block = blocks[blockKey];
+
+        if (!block) {
+            return;
+        }
+
+        normalizeBlock(block);
+
+        currentBlockKey = blockKey;
+        selectedEditableElement = 'title';
+
+        viewTitle.textContent = block.title;
+        viewMeta.textContent = block.meta;
+
+        renderCustomerSelects();
+
+        blockNameInput.value = block.title;
+        blockCategorySelect.value = block.category || 'content';
+        blockCustomerSelect.value = block.customerId || 'general';
+        linkedCustomerText.textContent = 'Gekoppeld aan: ' + getCustomerName(block.customerId || 'general');
+
+        selectedElement.value = 'title';
+        renderPlaceholderButtons();
+        syncElementControls();
+
+        renderCurrentPreview();
+        renderInfo(block);
+
+        infoVisible = true;
+        infoPanel.classList.remove('hidden');
+        blockViewGrid.className = 'grid min-h-0 flex-1 grid-cols-1 lg:grid-cols-[1fr_430px]';
+        toggleInfoPanel.textContent = 'Info';
+
+        setDevice('desktop');
+
+        blockView.classList.remove('hidden');
+        document.body.classList.add('overflow-hidden');
+    }
+
+    function renderCurrentPreview() {
+        if (!currentBlockKey || !blocks[currentBlockKey]) {
+            return;
+        }
+
+        previewContent.innerHTML = renderPreview(blocks[currentBlockKey]);
+    }
+
+    function renderInfo(block) {
+        viewFields.innerHTML = block.fields.map(function (field) {
+            return '<div class="rounded-xl bg-[#f1f1ef] px-3 py-2">' + field + '</div>';
+        }).join('');
+
+        viewFiles.innerHTML = block.files.map(function (file) {
+            return '<div class="rounded-xl bg-[#f1f1ef] px-3 py-2">' + file + '</div>';
+        }).join('');
+
+        updateScore(block);
+    }
+
+    function createManifest(block) {
+        return {
+            format: 'block-library-block-v1',
+            title: block.title,
+            category: block.category,
+            customerId: block.customerId || 'general',
+            customer: getCustomerName(block.customerId || 'general'),
+            previewType: block.previewType,
+            content: block.content,
+            image: block.image,
+            font: block.font,
+            responsive: block.responsive,
+            visibility: block.visibility,
+            score: block.score,
+            fields: block.fields,
+            files: block.files
+        };
+    }
+
+    function parseAiTasks(value) {
+        const lines = value
+            .split('\n')
+            .map(function (line) {
+                return line.trim();
+            })
+            .filter(Boolean);
+
+        return lines.map(function (line) {
+            const match = line.match(/^(@section|@eyebrow|@title|@body|@button|@card|@image)\s+(.+)$/i);
+
+            if (!match) {
+                return {
+                    target: null,
+                    target_label: null,
+                    instruction: line,
+                    valid: false,
+                    error: 'Deze regel begint niet met een geldige @target.'
+                };
+            }
+
+            return {
+                target: match[1].toLowerCase(),
+                target_label: aiTargets[match[1].toLowerCase()],
+                instruction: match[2].trim(),
+                valid: true
+            };
+        });
+    }
+
+    function createAiRequest(block) {
+        const tasks = parseAiTasks(aiChangeRequest.value);
+
+        return {
+            format: 'block-library-ai-change-request-v2',
+            instruction_for_ai: [
+                'Each task is one separate line.',
+                'Only modify the element explicitly referenced by target.',
+                'Do not modify any other element.',
+                'Do not guess a target.',
+                'If a task is invalid or unclear, leave the block unchanged for that task.',
+                'Return only valid JSON.',
+                'Return a downloadable .json file or download link.',
+                'Return format must be block-library-ai-patch-v1.',
+                'The patch must contain changes only, not a full rewritten block.'
+            ],
+            allowed_targets: aiTargets,
+            allowed_devices: ['desktop', 'tablet', 'mobile', 'all'],
+            allowed_properties: [
+                'color',
+                'background',
+                'radius',
+                'fontSize',
+                'padding',
+                'margin',
+                'gap',
+                'visible',
+                'text',
+                'imageUrl',
+                'alt',
+                'widthMode'
+            ],
+            tasks: tasks,
+            expected_return_format: {
+                format: 'block-library-ai-patch-v1',
+                changes: [
+                    {
+                        target: '@button',
+                        device: 'all',
+                        property: 'background',
+                        value: '#000000'
+                    }
+                ]
+            },
+            block: createManifest(block)
+        };
+    }
+
+    function createOverviewAiRequest() {
+        return {
+            format: 'block-library-ai-new-block-request-v1',
+            instruction_for_ai: 'Create a new Block Library block as a valid JSON object. Keep the exact Block Library structure. Include responsive desktop/tablet/mobile styling. Include visibility settings for all elements. Return only a valid JSON file with format block-library-block-v1. Create the response as a downloadable .json file or download link so it can be imported directly into the Block Library.',
+            requested_category: overviewAiCategory.value,
+            user_block_request: overviewAiPrompt.value.trim(),
+            required_structure: {
+                format: 'block-library-block-v1',
+                title: 'Block name',
+                category: overviewAiCategory.value,
+                customerId: 'general',
+                customer: 'Algemene blokken',
+                previewType: 'hero-split, payroll-hero, mth-fair-prices or mth-composite',
+                content: {
+                    eyebrow: '',
+                    title: '',
+                    body: '',
+                    button: '',
+                    alt: ''
+                },
+                image: {
+                    url: ''
+                },
+                font: 'Inter',
+                responsive: {
+                    desktop: 'element styles for section, eyebrow, title, body, button, card, image',
+                    tablet: 'same structure as desktop',
+                    mobile: 'same structure as desktop'
+                },
+                visibility: createVisibility(),
+                score: {
+                    seo: 80,
+                    alt: 80,
+                    speed: 80,
+                    lighthouse: 80
+                },
+                fields: ['title · Text', 'description · WYSIWYG', 'button · Link', 'image · Image'],
+                files: ['block.json', 'render.php', 'style.css']
+            }
+        };
+    }
+
+    function updateScore(block) {
+        const total = getOverallScore(block);
+
+        overallScore.textContent = String(total);
+        seoScoreText.textContent = String(block.score.seo);
+        altScoreText.textContent = String(block.score.alt);
+        speedScoreText.textContent = String(block.score.speed);
+        lighthouseScoreText.textContent = String(block.score.lighthouse);
+
+        seoScoreBar.style.width = block.score.seo + '%';
+        altScoreBar.style.width = block.score.alt + '%';
+        speedScoreBar.style.width = block.score.speed + '%';
+        lighthouseScoreBar.style.width = block.score.lighthouse + '%';
+    }
+
+    function updateCurrentBlock(options) {
+        if (!currentBlockKey || !blocks[currentBlockKey]) {
+            return;
+        }
+
+        const block = blocks[currentBlockKey];
+
+        if (!options || !options.skipSettings) {
+            block.title = blockNameInput.value.trim() || 'Naamloos blok';
+            block.category = blockCategorySelect.value;
+            block.customerId = blockCustomerSelect.value || 'general';
+            block.meta = getCustomerName(block.customerId) + ' · ' + block.category;
+        }
+
+        block.edited = true;
+
+        viewTitle.textContent = block.title;
+        viewMeta.textContent = block.meta;
+        linkedCustomerText.textContent = 'Gekoppeld aan: ' + getCustomerName(block.customerId || 'general');
+
+        saveData();
+        renderCurrentPreview();
+        renderInfo(block);
+        renderCards();
+    }
+
+    function updateSelectedElementStyle() {
+        if (!currentBlockKey || !blocks[currentBlockKey]) {
+            return;
+        }
+
+        const block = blocks[currentBlockKey];
+        const elementKey = selectedElement.value;
+        const element = getElement(block, elementKey);
+
+        if (!element) {
+            return;
+        }
+
+        element.color = styleColor.value;
+        element.background = styleBackground.value;
+        element.radius = Number(styleRadius.value);
+        element.fontSize = Number(styleFontSize.value);
+        element.padding = Number(stylePadding.value);
+        element.margin = Number(styleMargin.value);
+        element.gap = Number(styleGap.value);
+        block.font = fontSelect.value;
+
+        updateCurrentBlock({skipSettings: true});
+    }
+
+    function updateSelectedElementVisibility() {
+        if (!currentBlockKey || !blocks[currentBlockKey]) {
+            return;
+        }
+
+        const block = blocks[currentBlockKey];
+        const elementKey = selectedElement.value;
+
+        block.visibility[elementKey].desktop = visibleDesktop.checked;
+        block.visibility[elementKey].tablet = visibleTablet.checked;
+        block.visibility[elementKey].mobile = visibleMobile.checked;
+
+        updateCurrentBlock({skipSettings: true});
+    }
+
+    function updateSelectedElementText() {
+        if (!currentBlockKey || !blocks[currentBlockKey]) {
+            return;
+        }
+
+        const block = blocks[currentBlockKey];
+        const elementKey = selectedElement.value;
+
+        setTextValueForElement(block, elementKey, elementText.value);
+
+        if (elementKey === 'image') {
+            block.image.url = imageUrl.value;
+            block.content.alt = imageAlt.value;
+        }
+
+        updateCurrentBlock({skipSettings: true});
+    }
+
+    function applyAiPatchToCurrentBlock(patchData) {
+        if (!currentBlockKey || !blocks[currentBlockKey]) {
+            alert('Open eerst het blok waarop je deze AI patch wilt toepassen.');
+            return;
+        }
+
+        if (!patchData || patchData.format !== 'block-library-ai-patch-v1' || !Array.isArray(patchData.changes)) {
+            alert('Dit is geen geldige AI patch.');
+            return;
+        }
+
+        const block = blocks[currentBlockKey];
+        const allowedTargets = ['section', 'eyebrow', 'title', 'body', 'button', 'card', 'image'];
+        const allowedDevices = ['desktop', 'tablet', 'mobile'];
+        const allowedStyleProperties = ['color', 'background', 'radius', 'fontSize', 'padding', 'margin', 'gap'];
+
+        normalizeBlock(block);
+
+        patchData.changes.forEach(function (change) {
+            if (!change || !change.target || !change.property) {
+                return;
+            }
+
+            const target = String(change.target).replace('@', '');
+            const property = String(change.property);
+            const deviceValue = change.device || 'all';
+
+            if (!allowedTargets.includes(target)) {
+                return;
+            }
+
+            const targetDevices = deviceValue === 'all' ? allowedDevices : [deviceValue];
+
+            targetDevices.forEach(function (device) {
+                if (!allowedDevices.includes(device)) {
+                    return;
+                }
+
+                if (!block.responsive[device] || !block.responsive[device][target]) {
+                    return;
+                }
+
+                const element = block.responsive[device][target];
+
+                if (allowedStyleProperties.includes(property)) {
+                    element[property] = property === 'background' || property === 'color'
+                        ? String(change.value)
+                        : Number(change.value);
+                    return;
+                }
+
+                if (property === 'visible') {
+                    block.visibility[target][device] = Boolean(change.value);
+                    return;
+                }
+
+                if (property === 'text') {
+                    if (target === 'eyebrow') {
+                        block.content.eyebrow = String(change.value);
+                    }
+
+                    if (target === 'title') {
+                        block.content.title = String(change.value);
+                    }
+
+                    if (target === 'body') {
+                        block.content.body = String(change.value);
+                    }
+
+                    if (target === 'button') {
+                        block.content.button = String(change.value);
+                    }
+
+                    return;
+                }
+
+                if (property === 'imageUrl' && target === 'image') {
+                    block.image.url = String(change.value);
+                    return;
+                }
+
+                if (property === 'alt' && target === 'image') {
+                    block.content.alt = String(change.value);
+                    return;
+                }
+
+                if (property === 'widthMode' && target === 'button') {
+                    element.widthMode = String(change.value);
+                }
+            });
+        });
+
+        block.edited = true;
+
+        saveData();
+        syncElementControls();
+        renderCurrentPreview();
+        renderInfo(block);
+        renderCards();
+
+        alert('AI patch toegepast op het geopende blok.');
+    }
+
+    function duplicateCurrentBlock() {
+        if (!currentBlockKey || !blocks[currentBlockKey]) {
+            return;
+        }
+
+        const duplicateId = currentBlockKey + 'Variant' + Date.now();
+        const duplicate = cloneData(blocks[currentBlockKey]);
+
+        duplicate.title = duplicate.title + ' Variant';
+        duplicate.isDuplicate = true;
+        duplicate.sourceKey = duplicate.sourceKey || currentBlockKey;
+        duplicate.edited = true;
+
+        blocks[duplicateId] = duplicate;
+
+        saveData();
+        renderCards();
+        openBlock(duplicateId);
+    }
+
+    function closeBlock() {
+        blockView.classList.add('hidden');
+        document.body.classList.remove('overflow-hidden');
+        currentBlockKey = null;
+    }
+
+    function setDevice(device) {
+        currentDevice = device;
+
+        previewFrame.classList.remove('max-w-full', 'max-w-[820px]', 'max-w-[390px]');
+
+        if (device === 'desktop') {
+            previewFrame.classList.add('max-w-full');
+        }
+
+        if (device === 'tablet') {
+            previewFrame.classList.add('max-w-[820px]');
+        }
+
+        if (device === 'mobile') {
+            previewFrame.classList.add('max-w-[390px]');
+        }
+
+        deviceButtons.forEach(function (button) {
+            if (button.dataset.device === device) {
+                button.className = 'device-button rounded-full bg-black px-4 py-2 text-xs text-white';
+            } else {
+                button.className = 'device-button rounded-full px-4 py-2 text-xs text-black/45 hover:text-black';
+            }
+        });
+
+        syncElementControls();
+        renderCurrentPreview();
+    }
+
+    function toggleInfo() {
+        infoVisible = !infoVisible;
+
+        if (infoVisible) {
+            infoPanel.classList.remove('hidden');
+            blockViewGrid.className = 'grid min-h-0 flex-1 grid-cols-1 lg:grid-cols-[1fr_430px]';
+            toggleInfoPanel.textContent = 'Info';
+        } else {
+            infoPanel.classList.add('hidden');
+            blockViewGrid.className = 'grid min-h-0 flex-1 grid-cols-1';
+            toggleInfoPanel.textContent = 'Toon info';
+        }
+    }
+
+    function setupDetailsAccordion() {
+        const panels = Array.from(document.querySelectorAll('#infoPanel .block-panel'));
+
+        panels.forEach(function (panel) {
+            panel.addEventListener('toggle', function () {
+                if (!panel.open) {
+                    return;
+                }
+
+                panels.forEach(function (otherPanel) {
+                    if (otherPanel !== panel) {
+                        otherPanel.open = false;
+                    }
+                });
+            });
+        });
+    }
+
+    function downloadJson(filename, data) {
+        const blob = new Blob([JSON.stringify(data, null, 2)], {type: 'application/json'});
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+
+        link.href = url;
+        link.download = filename;
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+
+        URL.revokeObjectURL(url);
+    }
+
+    function escapePhp(value) {
+        return String(value).replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+    }
+
+    function renderPreviewForExport(block) {
+        const previousSelected = selectedEditableElement;
+        selectedEditableElement = '';
+        const html = renderPreview(block).replace(/\sdata-editable="[^"]*"/g, '');
+        selectedEditableElement = previousSelected;
+
+        return html;
+    }
+
+    function createRenderPhp(block) {
+        const safeName = block.title.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+        const html = renderPreviewForExport(block)
+            .replace(/<script[\s\S]*?<\/script>/gi, '')
+            .replace(/`/g, '\\`');
+
+        return `<?php
+/**
+ * Render template for ${block.title}
+ *
+ * Generated from Block Library.
+ */
+
+$block_id = '${safeName}-' . ($block['id'] ?? uniqid());
+$eyebrow = get_field('eyebrow_text') ?: '${escapePhp(block.content.eyebrow)}';
+$title = get_field('title') ?: '${escapePhp(block.content.title)}';
+$description = get_field('description') ?: '${escapePhp(block.content.body)}';
+$button = get_field('button');
+$image = get_field('image');
+?>
+<div id="<?php echo esc_attr($block_id); ?>" class="acf-block ${safeName}">
+${html}
+</div>
+`;
+    }
+
+    function createBlockJson(block) {
+        const safeName = block.title.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+
+        return {
+            apiVersion: 2,
+            name: 'digiwedo/' + safeName,
+            title: block.title,
+            category: 'digiwedo-blocks',
+            icon: 'block-default',
+            keywords: [block.category, getCustomerName(block.customerId || 'general'), 'acf'],
+            acf: {
+                mode: 'preview',
+                renderTemplate: 'render.php'
+            },
+            supports: {
+                align: ['wide', 'full'],
+                mode: false,
+                jsx: true
+            }
+        };
+    }
+
+    function createAcfJson(block) {
+        const safeName = block.title.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+
+        return {
+            key: 'group_' + safeName,
+            title: block.title,
+            fields: [
+                {key: 'field_' + safeName + '_eyebrow', label: 'Label', name: 'eyebrow_text', type: 'text'},
+                {key: 'field_' + safeName + '_title', label: 'Titel', name: 'title', type: 'text'},
+                {key: 'field_' + safeName + '_description', label: 'Tekst', name: 'description', type: 'wysiwyg'},
+                {key: 'field_' + safeName + '_button', label: 'Button', name: 'button', type: 'link'},
+                {key: 'field_' + safeName + '_image', label: 'Afbeelding', name: 'image', type: 'image', return_format: 'array', preview_size: 'medium', library: 'all'}
+            ],
+            location: [[{param: 'block', operator: '==', value: 'acf/' + safeName}]],
+            active: true
+        };
+    }
+
+    async function exportCurrentBlockAsZip() {
+        if (!currentBlockKey || !blocks[currentBlockKey]) {
+            return;
+        }
+
+        const block = blocks[currentBlockKey];
+        const safeName = block.title.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+        const zip = new JSZip();
+
+        zip.file('block-library-block.json', JSON.stringify(createManifest(block), null, 2));
+        zip.file('block.json', JSON.stringify(createBlockJson(block), null, 2));
+        zip.file('render.php', createRenderPhp(block));
+        zip.file('acf-json/group_' + safeName + '.json', JSON.stringify(createAcfJson(block), null, 2));
+
+        const blob = await zip.generateAsync({type: 'blob'});
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+
+        link.href = url;
+        link.download = safeName + '.zip';
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+
+        URL.revokeObjectURL(url);
+    }
+
+    function exportCurrentAiRequest() {
+        if (!currentBlockKey || !blocks[currentBlockKey]) {
+            return;
+        }
+
+        const block = blocks[currentBlockKey];
+        const safeName = block.title.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+
+        downloadJson(safeName + '-ai-request.json', createAiRequest(block));
+    }
+
+    function importBlockObject(rawData) {
+        if (rawData && rawData.format === 'block-library-ai-patch-v1') {
+            applyAiPatchToCurrentBlock(rawData);
+            return;
+        }
+
+        let blockData = rawData;
+
+        if (rawData.format === 'block-library-ai-change-request-v1' && rawData.block) {
+            blockData = rawData.block;
+        }
+
+        if (rawData.format === 'block-library-ai-change-request-v2' && rawData.block) {
+            blockData = rawData.block;
+        }
+
+        if (rawData.format === 'block-library-block-v1') {
+            blockData = rawData;
+        }
+
+        if (!blockData || !blockData.title || !blockData.responsive || !blockData.content) {
+            alert('Dit bestand lijkt geen geldig Block Library blok of geldige AI patch te zijn.');
+            return;
+        }
+
+        const importedBlock = {
+            title: blockData.title,
+            meta: (blockData.customer || getCustomerName(blockData.customerId || 'general')) + ' · ' + (blockData.category || 'content'),
+            category: blockData.category || 'content',
+            customerId: blockData.customerId || 'general',
+            previewType: blockData.previewType || 'hero-split',
+            isDuplicate: false,
+            imported: true,
+            edited: true,
+            font: blockData.font || 'Inter',
+            content: blockData.content,
+            image: blockData.image || {url: ''},
+            responsive: blockData.responsive,
+            visibility: blockData.visibility || createVisibility(),
+            score: blockData.score || {seo: 80, alt: 80, speed: 80, lighthouse: 80},
+            fields: blockData.fields || ['title · Text', 'description · WYSIWYG', 'button · Link', 'image · Image'],
+            files: blockData.files || ['block.json', 'render.php', 'style.css']
+        };
+
+        normalizeBlock(importedBlock);
+
+        const id = importedBlock.title.toLowerCase().replace(/[^a-z0-9]+/g, '-') + '-import-' + Date.now();
+
+        blocks[id] = importedBlock;
+
+        saveData();
+        renderCards();
+        openBlock(id);
+    }
+
+    async function importFile(file) {
+        if (!file) {
+            return;
+        }
+
+        try {
+            if (file.name.toLowerCase().endsWith('.zip')) {
+                const zip = await JSZip.loadAsync(file);
+                const jsonFile = zip.file('block-library-block.json') || zip.file('manifest.json');
+
+                if (!jsonFile) {
+                    alert('Geen block-library-block.json of manifest.json gevonden in ZIP.');
+                    return;
+                }
+
+                const content = await jsonFile.async('text');
+                importBlockObject(JSON.parse(content));
+                return;
+            }
+
+            const text = await file.text();
+            importBlockObject(JSON.parse(text));
+        } catch (error) {
+            alert('Importeren is mislukt. Controleer of het bestand geldige JSON bevat.');
+        }
+    }
+
+    function insertAiTarget(target) {
+        const textarea = aiChangeRequest;
+        const start = textarea.selectionStart;
+        const end = textarea.selectionEnd;
+        const value = textarea.value;
+
+        const before = value.slice(0, start);
+        const after = value.slice(end);
+        const lastAtIndex = before.lastIndexOf('@');
+
+        if (lastAtIndex === -1) {
+            textarea.value = before + target + ' ' + after;
+            textarea.selectionStart = before.length + target.length + 1;
+            textarea.selectionEnd = before.length + target.length + 1;
+        } else {
+            textarea.value = value.slice(0, lastAtIndex) + target + ' ' + after;
+            textarea.selectionStart = lastAtIndex + target.length + 1;
+            textarea.selectionEnd = lastAtIndex + target.length + 1;
+        }
+
+        aiTargetMenu.classList.add('hidden');
+        textarea.focus();
+    }
+
+    function toggleAiTargetMenu() {
+        const cursor = aiChangeRequest.selectionStart;
+        const before = aiChangeRequest.value.slice(0, cursor);
+        const currentLine = before.split('\n').pop();
+
+        if (currentLine.includes('@') && !currentLine.match(/^@\w+\s/)) {
+            aiTargetMenu.classList.remove('hidden');
+            return;
+        }
+
+        aiTargetMenu.classList.add('hidden');
+    }
+
+    function initEvents() {
+        searchInput.addEventListener('input', applyFilters);
+        customerFilterSelect.addEventListener('change', applyFilters);
+
+        openOverviewAiExporter.addEventListener('click', function () {
+            overviewAiModal.classList.remove('hidden');
+        });
+
+        closeOverviewAiExporter.addEventListener('click', function () {
+            overviewAiModal.classList.add('hidden');
+        });
+
+        downloadOverviewAiRequest.addEventListener('click', function () {
+            downloadJson('new-block-ai-request.json', createOverviewAiRequest());
+        });
+
+        importInput.addEventListener('change', function (event) {
+            importFile(event.target.files[0]);
+            event.target.value = '';
+        });
+
+        importPatchInput.addEventListener('change', function (event) {
+            importFile(event.target.files[0]);
+            event.target.value = '';
+        });
+
+        closeBlockView.addEventListener('click', closeBlock);
+        toggleInfoPanel.addEventListener('click', toggleInfo);
+        duplicateBlockButton.addEventListener('click', duplicateCurrentBlock);
+        exportZipButton.addEventListener('click', exportCurrentBlockAsZip);
+
+        exportAiButton.addEventListener('click', function () {
+            openPanelBySummaryText('AI wijziging exporteren');
+        });
+
+        downloadAiRequestButton.addEventListener('click', exportCurrentAiRequest);
+
+        aiChangeRequest.addEventListener('input', toggleAiTargetMenu);
+        aiChangeRequest.addEventListener('click', toggleAiTargetMenu);
+        aiChangeRequest.addEventListener('keyup', toggleAiTargetMenu);
+
+        aiTargetOptions.forEach(function (button) {
+            button.addEventListener('click', function () {
+                insertAiTarget(button.dataset.target);
+            });
+        });
+
+        document.addEventListener('click', function (event) {
+            if (!aiTargetMenu.contains(event.target) && event.target !== aiChangeRequest) {
+                aiTargetMenu.classList.add('hidden');
+            }
+        });
+
+        blockNameInput.addEventListener('input', updateCurrentBlock);
+        blockCategorySelect.addEventListener('change', updateCurrentBlock);
+        blockCustomerSelect.addEventListener('change', updateCurrentBlock);
+
+        selectedElement.addEventListener('change', syncElementControls);
+        elementText.addEventListener('input', updateSelectedElementText);
+        imageUrl.addEventListener('input', updateSelectedElementText);
+        imageAlt.addEventListener('input', updateSelectedElementText);
+
+        styleColor.addEventListener('input', updateSelectedElementStyle);
+        styleBackground.addEventListener('input', updateSelectedElementStyle);
+        styleRadius.addEventListener('input', updateSelectedElementStyle);
+        styleFontSize.addEventListener('input', updateSelectedElementStyle);
+        stylePadding.addEventListener('input', updateSelectedElementStyle);
+        styleMargin.addEventListener('input', updateSelectedElementStyle);
+        styleGap.addEventListener('input', updateSelectedElementStyle);
+        fontSelect.addEventListener('change', updateSelectedElementStyle);
+
+        visibleDesktop.addEventListener('change', updateSelectedElementVisibility);
+        visibleTablet.addEventListener('change', updateSelectedElementVisibility);
+        visibleMobile.addEventListener('change', updateSelectedElementVisibility);
+
+        previewContent.addEventListener('click', function (event) {
+            const target = event.target.closest('[data-editable]');
+
+            if (!target || !previewContent.contains(target)) {
+                return;
+            }
+
+            event.preventDefault();
+            event.stopPropagation();
+
+            const elementKey = target.dataset.editable;
+
+            if (!elementKey) {
+                return;
+            }
+
+            selectedElement.value = elementKey;
+            openPanelBySummaryText('Element en styling');
+            syncElementControls();
+        });
+
+        deviceButtons.forEach(function (button) {
+            button.addEventListener('click', function () {
+                setDevice(button.dataset.device);
+            });
+        });
+
+        document.addEventListener('keydown', function (event) {
+            if (event.key === 'Escape') {
+                closeBlock();
+                overviewAiModal.classList.add('hidden');
+                aiTargetMenu.classList.add('hidden');
+            }
+        });
+
+        window.addEventListener('resize', updateMiniPreviewSizes);
+    }
+
+    loadData();
+    renderCustomerSelects();
+    initEvents();
+    setupDetailsAccordion();
+    renderCards();
+</script>
+</body>
+</html>
